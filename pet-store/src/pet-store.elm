@@ -27,19 +27,31 @@ init : (Model, Cmd Msg)
 init =
   let
     (searchModel, _) = Search.init
-    (petListModel, _) = PetList.init
+    petListModel = PetList.init
   in
     (Model searchModel petListModel , Cmd.none)
 
 -- UPDATE
 
 type Msg
-  = Search Search.InputMsg
+  = SearchComp Search.InputMsg
     | Show PetList.Msg
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-  (model, Cmd.none)
+  case msg of
+    SearchComp msg ->
+      let
+        (searchModel, cmdMsg, outputMsg) = Search.update msg model.searchBar
+      in
+        case outputMsg of
+          Search.NoOutput -> ({ model | searchBar = searchModel }, Cmd.map SearchComp cmdMsg)
+          Search.ImageUrl url ->
+            let
+              petListModel = PetList.update (PetList.ImageUrl url) model.petList
+            in
+              ({model | searchBar = searchModel, petList = petListModel }, Cmd.map SearchComp cmdMsg)
+    Show _ -> (model, Cmd.none)
 
 -- SUBSCRIPTIONS
 
@@ -53,6 +65,6 @@ view : Model -> Html Msg
 view model =
   div
     []
-    [ App.map Search (Search.view model.searchBar)
+    [ App.map SearchComp (Search.view model.searchBar)
     , App.map Show (PetList.view model.petList)
     ]

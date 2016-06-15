@@ -1,4 +1,4 @@
-module Search exposing (Model, InputMsg,OutputMsg, init, update, view)
+module Search exposing (..)
 
 import Html exposing (..)
 import Html.Events exposing (..)
