@@ -34,7 +34,7 @@ init =
 -- UPDATE
 
 type Msg
-  = Search Search.Msg
+  = Search Search.InputMsg
     | Show PetList.Msg
 
 update : Msg -> Model -> (Model, Cmd Msg)

@@ -1,4 +1,4 @@
-module Search exposing (Model, Msg, init, update, view)
+module Search exposing (Model, InputMsg,OutputMsg, init, update, view)
 
 import Html exposing (..)
 import Html.Events exposing (..)
@@ -15,33 +15,35 @@ type alias Model = {
   , errorMsg : Maybe String
 }
 
-init : (Model, Cmd Msg)
+init : (Model, Cmd InputMsg)
 init =
   ({ query = "", errorMsg = Nothing } , Cmd.none)
 
 -- UPDATE
 
-type Msg
+type InputMsg
   = UserInput String
     | Submit
     | FetchSucceed String
     | FetchFail Http.Error
-    | ImageUrl String   --this will be processed by other component
 
-update : Msg -> Model -> (Model, Cmd Msg)
+type OutputMsg
+  = ImageUrl String
+    | NoOutput
+
+update : InputMsg -> Model -> (Model, Cmd InputMsg, OutputMsg)
 update msg model =
   case msg of
     UserInput query ->
-      ({ model | query = query }, Cmd.none)
+      ({ model | query = query }, Cmd.none, NoOutput)
     Submit ->
-      (model, getRandomGif model.query)
+      (model, getRandomGif model.query, NoOutput)
     FetchSucceed newUrl ->
-      (model, Cmd.none)
+      (model, Cmd.none, ImageUrl newUrl)
     FetchFail err ->
-      ({ model | errorMsg = Just (toString err) }, Cmd.none)
-    ImageUrl url -> (model, Cmd.none)  -- should not come here
+      ({ model | errorMsg = Just (toString err) }, Cmd.none, NoOutput)
 
-getRandomGif : String -> Cmd Msg
+getRandomGif : String -> Cmd InputMsg
 getRandomGif topic =
   let
     url =
@@ -56,7 +58,7 @@ decodeGifUrl =
 
 -- VIEW
 
-view : Model -> Html Msg
+view : Model -> Html InputMsg
 view model =
     div []
     [ input [ placeholder "Text to search", onInput UserInput ] []
@@ -64,7 +66,7 @@ view model =
     , showError model
     ]
 
-showError : Model -> Html Msg
+showError : Model -> Html InputMsg
 showError model =
   case model.errorMsg of
     Just err ->
