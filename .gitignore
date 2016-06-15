@@ -3,4 +3,4 @@ elm-package.json
 elm-stuff/
 # elm-repl generated files
 repl-temp-*
-pet-store/src/index.html
+pet-store/index.html
