@@ -4,9 +4,7 @@ import Html exposing (..)
 import Html.Events exposing (..)
 import Html.Attributes exposing (..)
 import Html.App as Html
-import Http
-import Json.Decode as Json
-import Task
+import SearchBackend
 
 -- MODEL
 
@@ -24,37 +22,23 @@ init =
 type InputMsg
   = UserInput String
     | Submit
-    | FetchSucceed String
-    | FetchFail Http.Error
+    | SearchCmd SearchBackend.FetchResult -- this is redundancy
 
 type OutputMsg
   = ImageUrl String
     | NoOutput
 
-update : InputMsg -> Model -> (Model, Cmd InputMsg, OutputMsg)
-update msg model =
+update : (String -> Cmd SearchBackend.FetchResult) -> InputMsg -> Model -> (Model, Cmd InputMsg, OutputMsg)
+update fetchF msg model =
   case msg of
     UserInput query ->
       ({ model | query = query }, Cmd.none, NoOutput)
     Submit ->
-      (model, getRandomGif model.query, NoOutput)
-    FetchSucceed newUrl ->
+      (model, Cmd.map SearchCmd (fetchF model.query), NoOutput)  -- have to use Cmd.map?
+    SearchCmd (SearchBackend.FetchSucceed newUrl) ->
       (model, Cmd.none, ImageUrl newUrl)
-    FetchFail err ->
+    SearchCmd (SearchBackend.FetchFail err) ->
       ({ model | errorMsg = Just (toString err) }, Cmd.none, NoOutput)
-
-getRandomGif : String -> Cmd InputMsg
-getRandomGif topic =
-  let
-    url =
-      "//api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=" ++ topic
-  in
-    Task.perform FetchFail FetchSucceed (Http.get decodeGifUrl url)
-
-
-decodeGifUrl : Json.Decoder String
-decodeGifUrl =
-  Json.at ["data", "image_url"] Json.string
 
 -- VIEW
 

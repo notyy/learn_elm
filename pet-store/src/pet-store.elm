@@ -7,6 +7,7 @@ import Time exposing (Time, second)
 import Search
 import PetList
 import Html.App as App
+import SearchBackend
 
 main =
   Html.program
@@ -42,7 +43,7 @@ update msg model =
   case msg of
     SearchComp msg ->
       let
-        (searchModel, cmdMsg, outputMsg) = Search.update msg model.searchBar
+        (searchModel, cmdMsg, outputMsg) = Search.update SearchBackend.getRandomGif msg model.searchBar
       in
         case outputMsg of
           Search.NoOutput -> ({ model | searchBar = searchModel }, Cmd.map SearchComp cmdMsg)
