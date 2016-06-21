@@ -8,6 +8,7 @@ import Search
 import PetList
 import Html.App as App
 import SearchBackend
+import Maybe exposing (..)
 
 main =
   Html.program
@@ -46,8 +47,8 @@ update msg model =
         (searchModel, cmdMsg, outputMsg) = Search.update SearchBackend.getRandomGif msg model.searchBar
       in
         case outputMsg of
-          Search.NoOutput -> ({ model | searchBar = searchModel }, Cmd.map SearchComp cmdMsg)
-          Search.ImageUrl url ->
+          Nothing -> ({ model | searchBar = searchModel }, Cmd.map SearchComp cmdMsg)
+          Just (Search.ImageUrl url) ->
             let
               petListModel = PetList.update (PetList.ImageUrl url) model.petList
             in

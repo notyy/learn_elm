@@ -5,6 +5,7 @@ import Html.Events exposing (..)
 import Html.Attributes exposing (..)
 import Html.App as Html
 import SearchBackend
+import Maybe exposing (..)
 
 -- MODEL
 
@@ -26,19 +27,18 @@ type InputMsg
 
 type OutputMsg
   = ImageUrl String
-    | NoOutput
 
-update : (String -> Cmd SearchBackend.FetchResult) -> InputMsg -> Model -> (Model, Cmd InputMsg, OutputMsg)
+update : (String -> Cmd SearchBackend.FetchResult) -> InputMsg -> Model -> (Model, Cmd InputMsg, Maybe OutputMsg)
 update fetchF msg model =
   case msg of
     UserInput query ->
-      ({ model | query = query }, Cmd.none, NoOutput)
+      ({ model | query = query }, Cmd.none, Nothing)
     Submit ->
-      (model, Cmd.map SearchCmd (fetchF model.query), NoOutput)  -- have to use Cmd.map?
+      (model, Cmd.map SearchCmd (fetchF model.query), Nothing)  -- have to use Cmd.map?
     SearchCmd (SearchBackend.FetchSucceed newUrl) ->
-      (model, Cmd.none, ImageUrl newUrl)
+      (model, Cmd.none, Just (ImageUrl newUrl))
     SearchCmd (SearchBackend.FetchFail err) ->
-      ({ model | errorMsg = Just (toString err) }, Cmd.none, NoOutput)
+      ({ model | errorMsg = Just (toString err) }, Cmd.none, Nothing)
 
 -- VIEW
 
